@@ -1,0 +1,33 @@
+{
+  "name": "giraffe",
+  "version": "0.1.0",
+  "description": "Interactive Giraffe animation using WebRTC, THREE.js, and SketchUp/Blender.",
+  "main": "public/index.html",
+  "scripts": {
+    "test": "npm run test"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/Wildhoney/Giraffe.git"
+  },
+  "keywords": [
+    "giraffe",
+    "three",
+    "animation",
+    "webrtc",
+    "experimental",
+    "experiment",
+    "blender",
+    "sketchup",
+    "animate",
+    "movement",
+    "interactive",
+    "interactivity"
+  ],
+  "author": "Adam Timberlake <adam.timberlake@gmail.com>",
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/Wildhoney/Giraffe/issues"
+  },
+  "homepage": "https://github.com/Wildhoney/Giraffe#readme"
+}
