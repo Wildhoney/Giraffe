@@ -14,7 +14,9 @@
     var compile = function(destPath, entryFile) {
 
         return browserify({ debug: true })
-            .transform(babelify)
+            .transform(babelify.configure({
+                stage: 0
+            }))
             .require(entryFile, { entry: true })
             .bundle()
             .on('error', function (model) { console.error(['Error:', model.message].join(' ')); })
@@ -50,10 +52,10 @@
 
     gulp.task('minify', ['compile'], function() {
 
-        return gulp.src('dist/' + config.release)
-            .pipe(uglify())
-            .pipe(rename({ suffix: '.min' }))
-            .pipe(gulp.dest('dist'));
+        //return gulp.src('dist/' + config.release)
+        //           .pipe(uglify())
+        //           .pipe(rename({ suffix: '.min' }))
+        //           .pipe(gulp.dest('dist'));
 
     });
 

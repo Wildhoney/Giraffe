@@ -2,15 +2,39 @@ import React         from 'react';
 import THREE         from 'three';
 import ColladaLoader from 'three-loaders-collada';
 import getUserMedia  from 'getusermedia';
-ColladaLoader(THREE);
+import yaml          from 'js-yaml';
+
+/**
+ * @constant innerWidth
+ * @type {Number}
+ */
+const innerWidth = window.innerWidth;
+
+/**
+ * @property innerHeight
+ * @type {Number}
+ */
+const innerHeight = window.innerHeight;
 
 /**
  * @module Giraffe
  * @extends React.Component
  * @author Adam Timberlake
- * @link
+ * @link https://github.com/Wildhoney/Giraffe
  */
 class Giraffe extends React.Component {
+
+    /**
+     * @property defaultProps
+     * @type {Object}
+     */
+    static defaultProps = { scene: {} };
+
+    /**
+     * @property appendElement
+     * @type {String}
+     */
+    static appendElement = '.scene';
 
     /**
      * @constructor
@@ -20,9 +44,155 @@ class Giraffe extends React.Component {
 
         super();
 
-        getUserMedia({ audio: true, video: false }, (error, stream) => {
+        ColladaLoader(THREE);
 
-            console.log(stream);
+        fetch('scene.yml').then(response => new Promise(resolve => {
+            response.text().then(text => resolve(yaml.safeLoad(text)));
+        })).then(options => {
+            this.options = options;
+            this.addScene();
+        });
+
+        //getUserMedia({ audio: true, video: false }, (error, stream) => {
+        //    console.log(stream);
+        //});
+
+    }
+
+    /**
+     * @method addScene
+     * @return {void}
+     */
+    addScene() {
+
+        const options       = this.options.scene;
+        this.props.renderer = new THREE.WebGLRenderer({ alpha: options.alpha, antialias: options.anti_alias });
+        this.props.scene    = new THREE.Scene();
+        this.props.camera   = this.addCamera();
+
+        this.addLights();
+        this.addGiraffe();
+
+
+
+        //var sphereMaterial =
+        //    new THREE.MeshLambertMaterial(
+        //        {
+        //            color: 0xCC0000
+        //        });
+        //
+        //var radius = 50,
+        //    segments = 16,
+        //    rings = 16;
+        //
+        //var sphere = new THREE.Mesh(
+        //
+        //    new THREE.SphereGeometry(
+        //        radius,
+        //        segments,
+        //        rings),
+        //
+        //    sphereMaterial);
+        //
+        //this.props.scene.add(sphere);
+
+
+
+
+        document.querySelector(Giraffe.appendElement).appendChild(this.props.renderer.domElement);
+        this.renderScene();
+
+    }
+
+    /**
+     * @method renderScene
+     * @return {void}
+     */
+    renderScene() {
+
+        const camera = this.props.camera;
+
+        const render = () => {
+
+            this.props.renderer.render(this.props.scene, this.props.camera);
+            requestAnimationFrame(render);
+
+        };
+
+        render();
+
+    }
+
+    /**
+     * @method addCamera
+     * @return {THREE.PerspectiveCamera}
+     */
+    addCamera() {
+
+        const options = this.options.scene;
+        const aspect  = (innerWidth / innerHeight);
+        const camera  = new THREE.PerspectiveCamera(options.angle, aspect, options.near, options.far);
+
+        this.props.scene.add(camera);
+        camera.position.z = 100;
+        this.props.renderer.setSize(innerWidth, innerHeight);
+
+        return camera;
+
+    }
+
+    /**
+     * @method addLights
+     * @return {Object}
+     */
+    addLights() {
+
+        const ambientLight = new THREE.AmbientLight(0x555555);
+        const pointLight   = new THREE.PointLight(0xFFFFFF);
+
+        pointLight.intensity  = 1;
+        pointLight.position.x = -1000;
+        pointLight.position.y = 50;
+        pointLight.position.z = -100;
+        pointLight.castShadow = true;
+
+        this.props.scene.add(ambientLight);
+        this.props.scene.add(pointLight);
+
+        return { ambientLight, pointLight };
+
+    }
+
+    /**
+     * @method addGiraffe
+     * @return {Promise}
+     */
+    addGiraffe() {
+
+        const loader = new THREE.ColladaLoader();
+
+        return new Promise(resolve => {
+
+            loader.load('models/Giraffe.dae', result => {
+
+                //var material = new THREE.MeshLambertMaterial( { color: 0x990000 } );
+                //
+                //result.scene.traverse(child => {
+                //
+                //    if (child instanceof THREE.Mesh) {
+                //        child.material = material;
+                //
+                //    }
+                //
+                //});
+
+                result.scene.scale.x = result.scene.scale.y = result.scene.scale.z = 2;
+                result.scene.updateMatrix();
+
+                this.props.scene.add(result.scene);
+                resolve(result.scene);
+
+            });
 
         });
 
@@ -33,99 +203,15 @@ class Giraffe extends React.Component {
      * @return {XML}
      */
     render() {
-        return <p>Hello World</p>
+
+        return (
+            <section className="scene"></section>
+        );
+
     }
 
 }
 
 document.addEventListener('DOMContentLoaded', () => {
-    React.render(<Giraffe />, document.querySelector('.scene'));
+    React.render(<Giraffe />, document.body);
 });
-
-
-
-
-
-
-
-
-
-//
-//    var aspectRatio = (innerWidth / innerHeight),
-//        renderer    = new THREE.WebGLRenderer({ alpha: true, antialias: true }),
-//        camera      = new THREE.PerspectiveCamera(45, aspectRatio, 0.1, 1000000),
-//        scene       = new THREE.Scene();
-//
-//    scene.add(camera);
-//    camera.position.z = 150;
-//    renderer.setSize(innerWidth, innerHeight);
-//    document.querySelector('.scene').appendChild(renderer.domElement);
-//
-//
-//
-//    // Render the ambient light so that even the darkest areas have a little bit
-//    // of light cast on them.
-//    scene.add(new THREE.AmbientLight(0x555555));
-//
-//    var light = new THREE.PointLight(0xFFFFFF);
-//
-//    light.intensity  = 1;
-//    light.position.x = -100;
-//    light.position.y = 50;
-//    light.position.z = 100;
-//    light.castShadow = true;
-//
-//    scene.add(light);
-//
-//
-//    addGiraffe();
-//    renderer.render(scene, camera);
-//
-//    setInterval(() => {
-//        console.log('x');
-//        renderer.render(scene, camera)}, 100);
-//
-//
-//
-//
-//
-//
-//
-//
-//    function addGiraffe() {
-//
-//        const collada = new THREE.ColladaLoader();
-//        //collada.options.convertUpAxis = true;
-//
-//        collada.load('models/giraffe.dae', result => {
-//
-//            result.scene.position.z = 47;
-//            result.scene.position.x = 10;
-//            result.scene.position.y = 10;
-//
-//            result.scene.rotation.x = -0.2;
-//
-//            result.scene.scale.x = 0.025;
-//            result.scene.scale.y = 0.025;
-//            result.scene.scale.z = 0.025;
-//
-//            scene.add(result.scene);
-//
-//
-//
-//            var material = new THREE.MeshLambertMaterial({ transparent: true, opacity: 0 }),
-//                sphere   = new THREE.SphereGeometry(100, 1, 1);
-//            var centerObject = new THREE.Mesh(sphere, material);
-//
-//            centerObject.rotation.x = 0.2;
-//            centerObject.rotation.y = 0.2;
-//
-//            scene.add(centerObject);
-//
-//
-//
-//        });
-//
-//    }
-//
-//});
