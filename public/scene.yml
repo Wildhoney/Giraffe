@@ -1,6 +1,0 @@
-scene:
-  view_angle: 45
-  near: 0.1
-  far: 10000
-  alpha: true
-  anti_alias: true

@@ -2,10 +2,13 @@
 
     var gulp       = require('gulp'),
         karma      = require('gulp-karma'),
-        jshint     = require('gulp-jshint'),
+        eslint     = require('gulp-eslint'),
         uglify     = require('gulp-uglify'),
         rename     = require('gulp-rename'),
+        sass       = require('gulp-sass'),
+        concatCss  = require('gulp-concat-css'),
         fs         = require('fs'),
+        path       = require('path'),
         yaml       = require('js-yaml'),
         browserify = require('browserify'),
         babelify   = require('babelify'),
@@ -26,11 +29,10 @@
 
     gulp.task('lint', function() {
 
-        return gulp.src(config.src)
-            .pipe(jshint())
-            .pipe(jshint.reporter('default', {
-                verbose: true
-            }));
+        return gulp.src(config.js)
+            .pipe(eslint())
+            .pipe(eslint.format())
+            .pipe(eslint.failOnError());
 
     });
 
@@ -50,12 +52,13 @@
 
     });
 
-    gulp.task('minify', ['compile'], function() {
+    gulp.task('sass', function () {
 
-        //return gulp.src('dist/' + config.release)
-        //           .pipe(uglify())
-        //           .pipe(rename({ suffix: '.min' }))
-        //           .pipe(gulp.dest('dist'));
+        return gulp.src(config.sass)
+                   .pipe(sass().on('error', sass.logError))
+                   .pipe(concatCss('all.css'))
+                   .pipe(rename(path.basename(config.css)))
+                   .pipe(gulp.dest(path.dirname(config.css)));
 
     });
 
@@ -63,7 +66,7 @@
     gulp.task('build', ['vendor', 'compile', 'minify']);
     gulp.task('default', ['test', 'build']);
     gulp.task('watch', function watch() {
-        return gulp.watch(config.src, ['vendor']);
+        return gulp.watch([].concat(config.js, config.sass), ['vendor', 'sass']);
     });
 
 })();

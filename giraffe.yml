@@ -1,5 +1,10 @@
 release: giraffe.js
 
-src:
+js:
   - src/*.js
   - src/**/*.js
+
+sass:
+  - public/sass/*.scss
+
+css: public/css/default.css
