@@ -1,10 +1,20 @@
 import obelisk from 'obelisk.js';
+import yaml from 'js-yaml';
 
 /**
  * @constant DEFAULT_SIZE
  * @type {Number}
  */
 const DEFAULT_SIZE = 10;
+
+/**
+ * @constant COLOUR_MAP
+ * @type {Object}
+ */
+const COLOUR_MAP = {
+    darkBrown: new obelisk.CubeColor().getByHorizontalColor(0x704A3A),
+    lightBrown: new obelisk.CubeColor().getByHorizontalColor(0xEDCE93)
+};
 
 /**
  * @module Giraffe
@@ -31,42 +41,50 @@ export default class Giraffe {
 
     /**
      * @method getModel
-     * @return {obelisk.Cube[]}
+     * @param {String} filename
+     * @return {Promise}
      */
-    getModel() {
-
-        const lightColour = new obelisk.CubeColor().getByHorizontalColor(0xEDCE93);
-        const darkColour  = new obelisk.CubeColor().getByHorizontalColor(0x704A3A);
-        const x           = 10;
-        const y           = 10;
-        const z           = 10;
+    getModel(filename) {
 
         /**
-         * @method sizeBy
-         * @param {Number} x
-         * @param {Number} [y=x]
-         * @param {Number} [z=x]
-         * @return {{x: number, y: number, z: number}}
+         * @method parseItem
+         * @param {String} item
+         * @param {Object|Number} model
+         * @return {Number}
          */
-        const sizeBy = (x, y = x, z = x) => {
-            return { x, y, z };
+        const parseItem = (item, model) => {
+
+            if (typeof model === 'undefined') return DEFAULT_SIZE;
+            if (typeof model === 'object')    return Number((model[item] || 1) * DEFAULT_SIZE);
+            else                              return Number(model * DEFAULT_SIZE);
+
         };
 
-        return {
+        /**
+         * @method parseModel
+         * @param {Object} model
+         * @return {Array}
+         */
+        const parseModel = model => {
 
-            neck: [
-                { colour: lightColour, size: sizeBy(DEFAULT_SIZE), position: sizeBy(x * 3, y * 3, z) },
-                { colour: darkColour,  size: sizeBy(DEFAULT_SIZE), position: sizeBy(x * 2, y * 2, z) },
-                { colour: lightColour, size: sizeBy(DEFAULT_SIZE), position: sizeBy(x, y, z) }
-            ],
+            return model.reduce((accumulator, {colour, size, position}) => {
 
-            head: [
-                { colour: lightColour,
-                  size: sizeBy(DEFAULT_SIZE * 2),
-                  position: sizeBy(x, y, z * 3) }
-            ]
+                accumulator.push({
+                    colour: COLOUR_MAP[colour],
+                    size: { x: parseItem('x', size), y: parseItem('y', size), z: parseItem('z', size) },
+                    position: { x: parseItem('x', position), y: parseItem('y', position), z: parseItem('z', position) }
+                });
 
-        }
+                return accumulator;
+
+            }, []);
+
+        };
+
+        return fetch(`./model/${filename}`)
+            .then(data => data.text())
+            .then(data => yaml.load(data))
+            .then(data => parseModel(data));
 
     }
 
@@ -79,12 +97,10 @@ export default class Giraffe {
         const canvas    = this.getElement();
         const point     = new obelisk.Point(200, 200);
         const pixelView = new obelisk.PixelView(canvas, point);
-        const model     = this.getModel();
 
-        Object.keys(model).forEach(key => {
-            //model[key].forEach(component => pixelView.renderObject(component[0], component[1]));
+        this.getModel('Giraffe.yml').then(model => {
 
-            model[key].forEach(({ colour, size, position }) => {
+            model.forEach(({ colour, size, position }) => {
 
                 const shapeModel    = new obelisk.CubeDimension(size.x, size.y, size.z);
                 const positionModel = new obelisk.Point3D(position.x, position.y, position.z);
@@ -93,14 +109,28 @@ export default class Giraffe {
 
             });
 
-            //const color  = new obelisk.SlopeColor().getByHorizontalColor(0xEDCE93);
+            //Object.keys(model).forEach(key => {
+            //    //model[key].forEach(component => pixelView.renderObject(component[0], component[1]));
             //
-            //var dimensionSouth = new obelisk.SlopeDimension(SIZE, SIZE);
+            //    model[key].forEach(({ colour, size, position }) => {
             //
+            //        const shapeModel    = new obelisk.CubeDimension(size.x, size.y, size.z);
+            //        const positionModel = new obelisk.Point3D(position.x, position.y, position.z);
             //
-            //var slopeSouth = new obelisk.SlopeSouth(dimensionSouth, color);
-            //var p3dSouth   = new obelisk.Point3D(80, 50, 50);
-            //pixelView.renderObject(slopeSouth, p3dSouth);
+            //        pixelView.renderObject(new obelisk.Cube(shapeModel, colour, true), positionModel);
+            //
+            //    });
+            //
+            //    //const color  = new obelisk.SlopeColor().getByHorizontalColor(0xEDCE93);
+            //    //
+            //    //var dimensionSouth = new obelisk.SlopeDimension(SIZE, SIZE);
+            //    //
+            //    //
+            //    //var slopeSouth = new obelisk.SlopeSouth(dimensionSouth, color);
+            //    //var p3dSouth   = new obelisk.Point3D(80, 50, 50);
+            //    //pixelView.renderObject(slopeSouth, p3dSouth);
+            //
+            //});
 
         });
 

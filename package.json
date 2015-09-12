@@ -48,6 +48,7 @@
     "karma": "^0.13.9"
   },
   "dependencies": {
+    "js-yaml": "^3.4.2",
     "obelisk.js": "^1.1.0"
   }
 }

@@ -1,5 +1,26 @@
-neck:
+- alias: neck
+  colour: lightBrown
+  size: 1
+  position:
+    x: 3
+    y: 3
+    z: 1
 
-  - colour: dark
-    shape:
-      x:
+- alias: neck
+  colour: darkBrown
+  size: 1
+  position:
+    x: 2
+    y: 2
+    z: 1
+
+- alias: neck
+  colour: lightBrown
+
+- alias: head
+  colour: lightBrown
+  size: 2
+  position:
+    x: 1
+    y: 1
+    z: 3
