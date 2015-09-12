@@ -1,5 +1,5 @@
 {
-  "name": "giraffe",
+  "name": "giraffe-app",
   "version": "0.1.1",
   "description": "Interactive Giraffe animation using WebRTC, THREE.js, and SketchUp/Blender.",
   "main": "public/index.html",
