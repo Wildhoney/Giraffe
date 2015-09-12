@@ -1,6 +1,6 @@
 {
   "name": "giraffe",
-  "version": "0.1.0",
+  "version": "0.1.1",
   "description": "Interactive Giraffe animation using WebRTC, THREE.js, and SketchUp/Blender.",
   "main": "public/index.html",
   "scripts": {
